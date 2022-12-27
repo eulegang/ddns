@@ -21,7 +21,6 @@ impl DNSUpdater for DigitalOcean {
             eyre::bail!("{name} is not a dns name")
         };
 
-        dbg!(base);
         let res = client
             .get(format!(
                 "https://api.digitalocean.com/v2/domains/{base}/records"
@@ -42,7 +41,8 @@ impl DNSUpdater for DigitalOcean {
                 name: None,
                 data: addr.to_string(),
             };
-            let res = client
+
+            client
                 .patch(format!(
                     "https://api.digitalocean.com/v2/domains/{base}/records/{id}"
                 ))
@@ -52,14 +52,14 @@ impl DNSUpdater for DigitalOcean {
                 .json(&update)
                 .send()?
                 .error_for_status()?;
-            dbg!(res);
         } else {
             let update = DomainUpdate {
                 ty: Some("A".to_string()),
                 name: Some(tip.to_string()),
                 data: addr.to_string(),
             };
-            let res = client
+
+            client
                 .post(format!(
                     "https://api.digitalocean.com/v2/domains/{base}/records"
                 ))
@@ -68,7 +68,6 @@ impl DNSUpdater for DigitalOcean {
                 .json(&update)
                 .send()?
                 .error_for_status()?;
-            dbg!(res);
         }
 
         Ok(())
