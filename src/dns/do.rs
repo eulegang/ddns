@@ -33,25 +33,27 @@ impl DNSUpdater for DigitalOcean {
 
         let res: DomainList = res.json()?;
 
-        let id = res.domain_records.first().map(|r| r.id);
+        if let Some(record) = res.domain_records.first() {
+            let id = record.id;
 
-        if let Some(id) = id {
-            let update = DomainUpdate {
-                ty: None,
-                name: None,
-                data: addr.to_string(),
-            };
+            if record.data != addr.to_string() {
+                let update = DomainUpdate {
+                    ty: None,
+                    name: None,
+                    data: addr.to_string(),
+                };
 
-            client
-                .patch(format!(
-                    "https://api.digitalocean.com/v2/domains/{base}/records/{id}"
-                ))
-                .bearer_auth(&self.token)
-                .header("Content-Type", "application/json")
-                .header("Accept", "application/json")
-                .json(&update)
-                .send()?
-                .error_for_status()?;
+                client
+                    .patch(format!(
+                        "https://api.digitalocean.com/v2/domains/{base}/records/{id}"
+                    ))
+                    .bearer_auth(&self.token)
+                    .header("Content-Type", "application/json")
+                    .header("Accept", "application/json")
+                    .json(&update)
+                    .send()?
+                    .error_for_status()?;
+            }
         } else {
             let update = DomainUpdate {
                 ty: Some("A".to_string()),

@@ -1,8 +1,8 @@
 use std::path::PathBuf;
 
-use crate::{dns::DNSUpdater, ip::IPFinder};
-use clap::{Parser, ValueEnum};
-use dns::DigitalOcean;
+use clap::Parser;
+use dns::DNSProvider;
+use ip::IPProvider;
 
 mod dns;
 mod ip;
@@ -24,16 +24,6 @@ pub struct Args {
     ip: IPProvider,
 }
 
-#[derive(ValueEnum, Clone)]
-pub enum DNSProvider {
-    DigitalOcean,
-}
-
-#[derive(ValueEnum, Clone)]
-pub enum IPProvider {
-    Ifconfig,
-}
-
 fn main() -> eyre::Result<()> {
     pretty_env_logger::init();
     let args = Args::parse();
@@ -45,20 +35,4 @@ fn main() -> eyre::Result<()> {
     dns.set_dns(&args.name, ip)?;
 
     Ok(())
-}
-
-impl DNSProvider {
-    fn updater(&self, token: String) -> Box<dyn DNSUpdater> {
-        match self {
-            DNSProvider::DigitalOcean => Box::new(DigitalOcean::new(token)),
-        }
-    }
-}
-
-impl IPProvider {
-    fn finder(&self) -> Box<dyn IPFinder> {
-        match self {
-            IPProvider::Ifconfig => Box::new(ip::IfConfig),
-        }
-    }
 }
