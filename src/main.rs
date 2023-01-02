@@ -14,8 +14,8 @@ pub struct Args {
     #[clap(short, long, name = "token")]
     token_file: PathBuf,
 
-    #[clap(short, long)]
-    name: String,
+    #[clap(short, long, name = "name")]
+    names: Vec<String>,
 
     #[clap(value_enum, short, long, default_value = "digital-ocean")]
     dns: DNSProvider,
@@ -32,7 +32,10 @@ fn main() -> eyre::Result<()> {
     let finder = args.ip.finder();
     let ip = finder.find_ip()?;
     let dns = args.dns.updater(token);
-    dns.set_dns(&args.name, ip)?;
+
+    for name in &args.names {
+        dns.set_dns(&name, ip)?;
+    }
 
     Ok(())
 }
